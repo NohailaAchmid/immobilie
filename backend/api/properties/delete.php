@@ -1,0 +1,24 @@
+<?php
+require_once __DIR__ . '/../../config/cors.php';
+require_once __DIR__ . '/../../config/Database.php';
+require_once __DIR__ . '/../../models/Property.php';
+
+$database = new Database();
+$db = $database->getConnection();
+$property = new Property($db);
+
+$data = json_decode(file_get_contents("php://input"), true);
+$id = isset($data['id']) ? (int)$data['id'] : (isset($_GET['id']) ? (int)$_GET['id'] : 0);
+
+if ($id <= 0) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "Identifiant du bien manquant."], JSON_UNESCAPED_UNICODE);
+    exit();
+}
+
+if ($property->delete($id)) {
+    echo json_encode(["status" => "success", "message" => "Bien supprimé avec succès."], JSON_UNESCAPED_UNICODE);
+} else {
+    http_response_code(500);
+    echo json_encode(["status" => "error", "message" => "Impossible de supprimer le bien."], JSON_UNESCAPED_UNICODE);
+}
